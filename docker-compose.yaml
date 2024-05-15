@@ -4,7 +4,6 @@ x-function: &python
   volumes:
     - ./app:/app:rw
     - poetry-volume:/opt/poetry:delegated
-  user: "${USER_ID}"
   environment: &env-vars
     POETRY_HOME: /opt/poetry
   networks:
@@ -20,11 +19,22 @@ services:
     build:
       context: .
       dockerfile: backend.dockerfile
-    depends_on:
-      - app_db
     env_file:
       - .env
     restart: always
+
+  neo4j:
+    image: neo4j:latest
+    container_name: ${PROJECT_SLUG}_neo4j
+    environment:
+      NEO4J_AUTH: ${DB_USER}/${DB_PASSWORD}
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - internal
 
   nginx:
     build: nginx/local
@@ -36,12 +46,12 @@ services:
       - "443:443"
     depends_on:
       - app
-      - app-admin
     networks:
       - internal
 
 volumes:
   poetry-volume:
+  neo4j_data:
 
 networks:
   internal:

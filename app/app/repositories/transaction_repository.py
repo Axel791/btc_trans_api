@@ -1,0 +1,43 @@
+from functools import lru_cache
+
+from fastapi import Depends
+
+from app.db.connection import DBConnection
+from app.db.connection_fatcory import get_db_connection
+from app.db.queries.transaction_queries import CREATE_TRANSACTION, BULK_CREATE_TRANSACTIONS, GET_TRANSACTION
+from app.repositories.interfaces import ITransactionRepository
+from app.schemas.transactions import Transaction, TransactionCreate
+
+
+class TransactionRepository(ITransactionRepository):
+
+    def __init__(self, connection: DBConnection) -> None:
+        self._connection = connection
+
+    async def get(self, obj_id: str) -> Transaction | None:
+        async with self._connection.session() as session:
+            result = await session.run(GET_TRANSACTION, id=obj_id)
+            record = result.single()
+            if record:
+                return Transaction(**record["t"].items())
+            return None
+
+    async def bulk_create(self, objs_in: list[TransactionCreate], batch_size: int = 100) -> None:
+        for i in range(0, len(objs_in), batch_size):
+            batch = objs_in[i:i + batch_size]
+            async with self._connection.session() as session:
+                await session.run(BULK_CREATE_TRANSACTIONS, transactions=[obj.dict() for obj in batch])
+
+    async def list(self) -> list[Transaction]:
+        ...
+
+    async def create(self, obj_in: TransactionCreate) -> None:
+        async with self._connection.session() as session:
+            await session.run(CREATE_TRANSACTION, **obj_in.dict())
+
+
+@lru_cache()
+def get_transaction_repository(
+        db_connection: DBConnection = Depends(get_db_connection)
+) -> ITransactionRepository:
+    return TransactionRepository(connection=db_connection)
