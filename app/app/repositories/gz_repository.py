@@ -40,7 +40,7 @@ class GzZipRepository(IArchiveRepository, FileManagementMixin):
             logging.error(f"Неизвестная ошибка при распаковке файла {zip_path}: {e}")
             raise GzZipError(f"Неизвестная ошибка при распаковке файла {zip_path}: {e}")
 
-    async def get_extracted_files(self, extract_to: str) -> List[str]:
+    async def get_extracted_files(self, extract_to: str) -> list[str]:
         """Получение распакованных файлов"""
         extracted_files = []
         for root, dirs, files in os.walk(extract_to):

@@ -57,3 +57,7 @@ BULK_CREATE_TRANSACTIONS = """
 GET_TRANSACTION = """
     MATCH (t:Transaction {hash: $hash}) RETURN t
 """
+
+GET_TRANSACTIONS_BY_BLOCK_ID = """
+    MATCH (t:Transaction {block_id: $block_id}) RETURN t
+"""

@@ -1,3 +1,5 @@
+from typing import AsyncGenerator
+
 import aiofiles
 
 from functools import lru_cache
@@ -18,11 +20,18 @@ class TsvRepository(ITsvRepository, FileManagementMixin):
         async with aiofiles.open(tsv_path, mode='r', encoding='utf-8') as file:
             return file
 
-    async def parse_tsv(self, file: AsyncIndirectBufferedReader) -> list[TransactionCreate]:
-        """Парсинг записей из таблицы."""
-        transactions = []
+    async def parse_tsv(self, file: AsyncIndirectBufferedReader) -> AsyncGenerator[TransactionCreate, None]:
+        """Парсинг записей из таблицы с использованием генератора."""
         async for line in file:
-            row = dict(line.strip().split('\t'))
+            row = dict(zip(
+                ['block_id', 'hash', 'time', 'size', 'weight', 'version',
+                 'lock_time', 'is_coinbase', 'has_witness', 'input_count',
+                 'output_count', 'input_total', 'input_total_usd', 'output_total',
+                 'output_total_usd', 'fee', 'fee_usd', 'fee_per_kb', 'fee_per_kb_usd',
+                 'fee_per_kwu', 'fee_per_kwu_usd', 'cdd_total'],
+                line.strip().split('\t')
+            ))
+
             transaction = TransactionCreate(
                 block_id=int(row['block_id']),
                 hash=row['hash'],
@@ -47,9 +56,9 @@ class TsvRepository(ITsvRepository, FileManagementMixin):
                 fee_per_kwu_usd=float(row['fee_per_kwu_usd']),
                 cdd_total=float(row['cdd_total']),
             )
-            transactions.append(transaction)
-        return transactions
+            yield transaction
 
 
+@lru_cache()
 def get_tsv_repository() -> ITsvRepository:
     return TsvRepository()

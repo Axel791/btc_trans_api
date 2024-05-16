@@ -1,6 +1,8 @@
+import aiofiles
+
 from functools import lru_cache
 
-from fastapi import Depends
+from fastapi import Depends, UploadFile
 
 from app.repositories.transaction_repository import get_transaction_repository
 from app.repositories.gz_repository import get_gz_repository
@@ -26,11 +28,39 @@ class TransactionService:
     async def create_transaction(self, obj_in: TransactionCreate) -> Transaction:
         return await self._transaction_repo.create(obj_in=obj_in)
 
-    async def bulk_create_transactions(self, objs_in: list[TransactionCreate]) -> None:
-        ...
+    async def bulk_create_transactions_from_file(self, file: UploadFile, batch_size: int) -> None:
+        tmp_path = f"/tmp/{file.filename}"
+        async with aiofiles.open(tmp_path, 'wb') as out_file:
+            content = await file.read()
+            await out_file.write(content)
+
+        extract_path = await self._gz_repo.unzip(tmp_path)
+
+        tsv_file_path = await self._gz_repo.get_extracted_files(extract_path)
+
+        tsv_file = await self._tsv_repo.open_tsv(tsv_file_path[0])
+
+        try:
+            transactions = []
+            for transaction in await self._tsv_repo.parse_tsv(tsv_file):
+                print(f"TRANSACTION: {transaction}")
+                transactions.append(transaction)
+                if len(transactions) >= batch_size:
+                    await self._transaction_repo.bulk_create(transactions, batch_size=batch_size)
+                    transactions = []
+
+            if transactions:
+                await self._transaction_repo.bulk_create(transactions, batch_size=batch_size)
+        finally:
+            await tsv_file.close()
+
+        await self._tsv_repo.delete_files(tsv_file_path)
 
     async def get_transaction(self, transaction_hash: str) -> Transaction:
         return await self._transaction_repo.get(transaction_hash=transaction_hash)
+
+    async def get_list_transactions(self, block_id: int) -> list[Transaction]:
+        return await self._transaction_repo.list(block_id=block_id)
 
 
 @lru_cache()

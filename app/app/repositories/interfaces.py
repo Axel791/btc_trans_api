@@ -13,8 +13,12 @@ class ITransactionRepository(ABC):
         """Получение транзакции"""
 
     @abstractmethod
-    async def bulk_create(self, objs_in: list[TransactionCreate], batch_size: int = 100) -> None:
+    async def bulk_create(self, objs_in: list[TransactionCreate], batch_size: int) -> None:
         """Массовое создание транзакций"""
+
+    @abstractmethod
+    async def list(self, block_id: int) -> list[Transaction]:
+        """Получение транзакций по блоку"""
 
     @abstractmethod
     async def create(self, obj_in: TransactionCreate) -> Transaction:
@@ -41,7 +45,7 @@ class IArchiveRepository(IFileManagementMixin, ABC):
         """Распаковка архива"""
 
     @abstractmethod
-    async def get_extracted_files(self, extract_to: str) -> list:
+    async def get_extracted_files(self, extract_to: str) -> list[str]:
         """Получение распакованных файлов"""
 
 
