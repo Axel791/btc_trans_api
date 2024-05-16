@@ -5,7 +5,7 @@ from app.schemas.transactions import TransactionCreate, Transaction
 from app.services.transaction_service import TransactionService, get_transaction_service
 from app.api.pagination import PaginationParams, Paginator, BasePaginationResponse
 
-router = APIRouter()
+router = APIRouter(route_class=SafeLoggingRoute)
 
 
 @router.get(
