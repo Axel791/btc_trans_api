@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from app.db.connection import DBConnection
 from app.db.connection_fatcory import get_db_connection
-from app.db.queries.transaction_queries import CREATE_TRANSACTION, BULK_CREATE_TRANSACTIONS, GET_TRANSACTION
+from app.db.queries.neo4j.transaction_queries import CREATE_TRANSACTION, BULK_CREATE_TRANSACTIONS, GET_TRANSACTION
 from app.repositories.interfaces import ITransactionRepository
 from app.schemas.transactions import Transaction, TransactionCreate
 
@@ -14,12 +14,13 @@ class TransactionRepository(ITransactionRepository):
     def __init__(self, connection: DBConnection) -> None:
         self._connection = connection
 
-    async def get(self, obj_id: str) -> Transaction | None:
+    async def get(self, transaction_hash: str) -> Transaction | None:
         async with self._connection.session() as session:
-            result = await session.run(GET_TRANSACTION, id=obj_id)
-            record = result.single()
+            result = await session.run(GET_TRANSACTION, hash=transaction_hash)
+            record = await result.single()
             if record:
-                return Transaction(**record["t"].items())
+                print(f"RECORD: {record}")
+                return Transaction(**dict(record["t"].items()))
             return None
 
     async def bulk_create(self, objs_in: list[TransactionCreate], batch_size: int = 100) -> None:

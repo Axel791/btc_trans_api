@@ -6,7 +6,7 @@ class ITransactionRepository(ABC):
     """Интерфейс репозитория транзакций"""
 
     @abstractmethod
-    async def get(self, obj_id) -> Transaction:
+    async def get(self, transaction_hash: str) -> Transaction:
         """Получение транзакции"""
 
     @abstractmethod

@@ -27,7 +27,7 @@ services:
     image: neo4j:latest
     container_name: ${PROJECT_SLUG}_neo4j
     environment:
-      NEO4J_AUTH: ${DB_USER}/${DB_PASSWORD}
+      NEO4J_AUTH: neo4j/${DB_PASSWORD}
     ports:
       - "7474:7474"
       - "7687:7687"

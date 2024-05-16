@@ -9,21 +9,21 @@ router = APIRouter(route_class=SafeLoggingRoute)
 
 
 @router.get(
-    "/get/{transaction_id}",
+    "/{transaction_hash}",
     summary="Get transaction.",
     status_code=status.HTTP_200_OK,
     description="Get transaction by ID",
     response_model=Transaction,
 )
 async def get_transaction(
-        transaction_id: str,
+        transaction_hash: str,
         transaction_service: TransactionService = Depends(get_transaction_service)
 ) -> Transaction:
-    return await transaction_service.get_transaction(obj_id=transaction_id)
+    return await transaction_service.get_transaction(transaction_hash=transaction_hash)
 
 
 @router.post(
-    "create/",
+    "/create",
     summary="Create transaction",
     status_code=status.HTTP_200_OK,
     description="Create transaction",
@@ -36,7 +36,7 @@ async def create_transaction(
 
 
 @router.post(
-    "bulk_create/",
+    "/bulk",
     summary="Bulk create transactions",
     status_code=status.HTTP_200_OK,
     description="Bulk create transactions from Blockchair dump",

@@ -55,5 +55,5 @@ BULK_CREATE_TRANSACTIONS = """
 """
 
 GET_TRANSACTION = """
-    MATCH (t:Transaction {id: $id}) RETURN t
+    MATCH (t:Transaction {hash: $hash}) RETURN t
 """

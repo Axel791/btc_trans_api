@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class TransactionBase(BaseModel):
@@ -35,7 +35,13 @@ class TransactionCreate(TransactionBase):
 
 class Transaction(TransactionBase):
     """Транзакция"""
-    id: str
+
+    @field_validator("time", mode="before")
+    @classmethod
+    def lower_log_level(cls, v):
+        if hasattr(v, 'to_native'):
+            return v.to_native()
+        return v
 
     class Config:
         orm_mode = True

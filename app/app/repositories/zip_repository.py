@@ -6,7 +6,7 @@ from tempfile import mkdtemp
 from zipfile import ZipFile, BadZipFile
 
 from app.repositories.interfaces import IZipRepository
-from app.exceptions.exceptions import ZipError
+from app.exceptions.zip_exceptions import ZipError
 
 
 class ZipRepository(IZipRepository):

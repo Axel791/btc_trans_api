@@ -22,8 +22,8 @@ class TransactionService:
     async def bulk_create_transactions(self, objs_in: list[TransactionCreate]) -> None:
         ...
 
-    async def get_transaction(self, obj_id: str) -> Transaction:
-        return await self._transaction_repo.get(obj_id=obj_id)
+    async def get_transaction(self, transaction_hash: str) -> Transaction:
+        return await self._transaction_repo.get(transaction_hash=transaction_hash)
 
 
 @lru_cache()
