@@ -27,12 +27,13 @@ async def get_transaction(
     summary="Create transaction",
     status_code=status.HTTP_200_OK,
     description="Create transaction",
+    response_model=Transaction,
 )
 async def create_transaction(
         transaction: TransactionCreate,
         transaction_service: TransactionService = Depends(get_transaction_service)
-) -> None:
-    await transaction_service.create_transaction(obj_in=transaction)
+) -> Transaction:
+    return await transaction_service.create_transaction(obj_in=transaction)
 
 
 @router.post(

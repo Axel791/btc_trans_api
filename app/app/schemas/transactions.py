@@ -38,7 +38,7 @@ class Transaction(TransactionBase):
 
     @field_validator("time", mode="before")
     @classmethod
-    def lower_log_level(cls, v):
+    def time_validator(cls, v):
         if hasattr(v, 'to_native'):
             return v.to_native()
         return v

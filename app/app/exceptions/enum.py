@@ -16,5 +16,5 @@ class ErrorEnum(StrEnum):
     UNEXPECTED_ERROR = "Произошла неизвестная ошибка ошибка."
 
 
-class ZIPErrorEnum(StrEnum):
-    BAD_ZIP_FILE_ERROR = "Ошибка при разархивации файла {}"
+class GzZIPErrorEnum(StrEnum):
+    BAD_GZ_ZIP_FILE_ERROR = "Ошибка при разархивации файла {}"

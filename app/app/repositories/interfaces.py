@@ -1,4 +1,7 @@
 from abc import abstractmethod, ABC
+
+from aiofiles.threadpool.binary import AsyncIndirectBufferedReader
+
 from app.schemas.transactions import TransactionCreate, Transaction
 
 
@@ -14,24 +17,41 @@ class ITransactionRepository(ABC):
         """Массовое создание транзакций"""
 
     @abstractmethod
-    async def list(self) -> list[Transaction]:
-        """Получение транзакций по адресу"""
-
-    @abstractmethod
-    async def create(self, obj_in: TransactionCreate) -> None:
+    async def create(self, obj_in: TransactionCreate) -> Transaction:
         """Создание транзакции"""
 
 
-class IZipRepository:
+class IFileManagementMixin(ABC):
+    """Интерфейс миксина по работе с файлами."""
 
     @abstractmethod
-    def generate_tmp_path(self, local_path: str | None = None) -> str:
+    async def delete_files(self, file_paths: list[str]) -> None:
+        """Удаляет файлы по заданным путям."""
+
+    @abstractmethod
+    async def generate_tmp_path(self, local_path: str | None = None) -> str:
         """Генерирует путь для временной директории, если путь не предоставлен. Использует временный каталог."""
 
+
+class IArchiveRepository(IFileManagementMixin, ABC):
+    """Интерфейс репозитория по работе с архивами"""
+
     @abstractmethod
-    def unzip(self, zip_path: str, extract_to: str | None = None) -> str:
+    async def unzip(self, zip_path: str, extract_to: str | None = None) -> str:
         """Распаковка архива"""
 
     @abstractmethod
-    def get_extracted_files(self, extract_to: str) -> list:
+    async def get_extracted_files(self, extract_to: str) -> list:
         """Получение распакованных файлов"""
+
+
+class ITsvRepository(IFileManagementMixin, ABC):
+    """Интерфейс для работы с TSV файлами."""
+
+    @abstractmethod
+    async def open_tsv(self, tsv_path: str) -> AsyncIndirectBufferedReader:
+        """Открытие tsv файла"""
+
+    @abstractmethod
+    async def parse_tsv(self, file: AsyncIndirectBufferedReader) -> list[TransactionCreate]:
+        """Парсинг записей из таблицы."""

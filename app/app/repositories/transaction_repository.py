@@ -19,7 +19,6 @@ class TransactionRepository(ITransactionRepository):
             result = await session.run(GET_TRANSACTION, hash=transaction_hash)
             record = await result.single()
             if record:
-                print(f"RECORD: {record}")
                 return Transaction(**dict(record["t"].items()))
             return None
 
@@ -29,13 +28,11 @@ class TransactionRepository(ITransactionRepository):
             async with self._connection.session() as session:
                 await session.run(BULK_CREATE_TRANSACTIONS, transactions=[obj.dict() for obj in batch])
 
-    async def list(self) -> list[Transaction]:
-        ...
-
-    async def create(self, obj_in: TransactionCreate) -> None:
+    async def create(self, obj_in: TransactionCreate) -> Transaction:
         async with self._connection.session() as session:
-            await session.run(CREATE_TRANSACTION, **obj_in.dict())
-
+            result = await session.run(CREATE_TRANSACTION, **obj_in.dict())
+            record = await result.single()
+            return Transaction(**dict(record["t"].items()))
 
 @lru_cache()
 def get_transaction_repository(
