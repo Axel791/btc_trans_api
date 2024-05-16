@@ -1,4 +1,6 @@
 import aiofiles
+
+from functools import lru_cache
 from datetime import datetime
 
 from aiofiles.threadpool.binary import AsyncIndirectBufferedReader
@@ -9,6 +11,7 @@ from app.schemas.transactions import TransactionCreate
 
 
 class TsvRepository(ITsvRepository, FileManagementMixin):
+    tmp_prefix = "tsv_"
 
     async def open_tsv(self, tsv_path: str) -> AsyncIndirectBufferedReader:
         """Открытие tsv файла"""
@@ -46,3 +49,7 @@ class TsvRepository(ITsvRepository, FileManagementMixin):
             )
             transactions.append(transaction)
         return transactions
+
+
+def get_tsv_repository() -> ITsvRepository:
+    return TsvRepository()

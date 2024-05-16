@@ -4,7 +4,8 @@ from fastapi import Depends
 
 from app.repositories.transaction_repository import get_transaction_repository
 from app.repositories.gz_repository import get_gz_repository
-from app.repositories.interfaces import ITransactionRepository, IArchiveRepository
+from app.repositories.tsv_repository import get_tsv_repository
+from app.repositories.interfaces import ITransactionRepository, IArchiveRepository, ITsvRepository
 
 from app.schemas.transactions import Transaction, TransactionCreate
 
@@ -12,8 +13,14 @@ from app.schemas.transactions import Transaction, TransactionCreate
 class TransactionService:
     """Сервис обработки транзакций."""
 
-    def __init__(self, gz_repo: IArchiveRepository, transaction_repo: ITransactionRepository) -> None:
+    def __init__(
+        self,
+        gz_repo: IArchiveRepository,
+        tsv_repo: ITsvRepository,
+        transaction_repo: ITransactionRepository
+    ) -> None:
         self._gz_repo = gz_repo
+        self._tsv_repo = tsv_repo
         self._transaction_repo = transaction_repo
 
     async def create_transaction(self, obj_in: TransactionCreate) -> Transaction:
@@ -29,9 +36,11 @@ class TransactionService:
 @lru_cache()
 def get_transaction_service(
         gz_repo: IArchiveRepository = Depends(get_gz_repository),
+        tsv_repo: ITsvRepository = Depends(get_tsv_repository),
         transaction_repo: ITransactionRepository = Depends(get_transaction_repository)
 ) -> TransactionService:
     return TransactionService(
         gz_repo=gz_repo,
+        tsv_repo=tsv_repo,
         transaction_repo=transaction_repo,
     )
